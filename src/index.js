@@ -1,13 +1,35 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+import 'bulma/css/bulma.min.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Register from './components/Register';
+import Home from './components/Home';
+import Login from './components/Login';
+import Categories from './Category/Categories';
+
+
+import { UserProvider } from './context/UserContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <UserProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/categories" element={<Categories />} />
+        </Routes>
+        <Footer />
+      </Router>
+    </UserProvider>
   </React.StrictMode>
 );
 

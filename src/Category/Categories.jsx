@@ -28,14 +28,14 @@ const Categories = () => {
             }
         };
 
-        const response = await fetch(`/api/categories?skip=${skip}&limit=${limit}`, requestOptions);
+        const response = await fetch(`/api/categories-dashboard?skip=${skip}&limit=${limit}`, requestOptions);
         const data = await response.json();
 
         if (!response.ok) {
             setErrorMessage(data.detail);
         }
         else {
-            setCategories(data);
+            setCategories(data.categories);
             setLoaded(true);
         }
     };
@@ -110,8 +110,8 @@ const Categories = () => {
                             <tr key={category.id}>
                                 <td>{category.name}</td>
                                 {/* TODO: Improve backend endpoint to return spendings and budget */}
-                                <td>{category.spendings}</td>
-                                <td>{category.budget}</td>
+                                <td>{category.spendings / 100 + " PLN"}</td>
+                                <td>{category.budget / 100 + " PLN"}</td>
                                 <td>
                                     <button className="button mr-2 is-info is-light" onClick={() => handleUpdate(category.id)}>
                                         Update

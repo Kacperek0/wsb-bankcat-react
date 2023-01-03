@@ -46,6 +46,7 @@ const Categories = () => {
 
     const handleModal = () => {
         setActiveModal(!activeModal);
+        console.log(activeModal)
         getCategories();
         setId(null)
     }
@@ -90,7 +91,7 @@ const Categories = () => {
                 setErrorMessage={setErrorMessage}
                 setSuccessMessage={setSuccessMessage}
             />
-            <button className="button is-fullwidth mb-5 is-primary" onClick={ () => setActiveModal(true) }>
+            <button className="button is-fullwidth mb-5 is-primary" onClick={() => setActiveModal(true)}>
                 Create Category
             </button>
             <ErrorMessage message={errorMessage} />

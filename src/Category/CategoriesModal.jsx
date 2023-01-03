@@ -103,7 +103,7 @@ const CategoriesModal = ({
     return (
         <div className={`modal ${active && "is-active"}`}>
             <div className="modal-background" onClick={handleModal}>
-                <div className="modal-card">
+                <div className="modal-card" onClick={(e) => { e.stopPropagation(); }}>
                     <header className="modal-card-head has-background-primary-light">
                         <h1 className="modal-card-title">
                             { id ? "Edit Category" : "Add Category" }

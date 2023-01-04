@@ -11,6 +11,7 @@ import Register from './components/Register';
 import Home from './components/Home';
 import Login from './components/Login';
 import Categories from './Category/Categories';
+import Budgets from './Budgets/Budgets';
 
 
 import { UserProvider } from './context/UserContext';
@@ -26,6 +27,7 @@ root.render(
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/budgets" element={<Budgets />} />
         </Routes>
         <Footer />
       </Router>

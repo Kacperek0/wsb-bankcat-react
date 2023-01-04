@@ -27,8 +27,8 @@ const Navbar = () => {
                         <a className="navbar-item" href="/categories">
                             Categories
                         </a>
-                        <a className="navbar-item" href="/savings">
-                            Savings
+                        <a className="navbar-item" href="/budgets">
+                            Budgets
                         </a>
                         <a className="navbar-item" href="/spendings">
                             Spendings

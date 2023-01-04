@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import moment from "moment";
+import { PieChart } from "react-minimal-pie-chart";
 
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import SuccessMessage from "../components/Messages/SuccessMessage";
@@ -46,7 +46,6 @@ const Categories = () => {
 
     const handleModal = () => {
         setActiveModal(!activeModal);
-        console.log(activeModal)
         getCategories();
         setId(null)
     }
@@ -61,7 +60,6 @@ const Categories = () => {
         };
 
         const response = await fetch(`/api/categories/${id}`, requestOptions);
-        const data = await response.json();
 
         if (!response.ok) {
             setErrorMessage("Only empty categories can be deleted");
@@ -80,6 +78,42 @@ const Categories = () => {
         setActiveModal(true);
     };
 
+    // Process data for pie chart, returns array of objects for top 5 categories with biggest spendings and one object for all other categories
+    const processData = () => {
+        const data = [];
+        const other = {
+            title: "Other",
+            value: 0,
+            // Assign light blue color for "Other" category
+            color: "#21266a"
+        };
+
+        categories.sort((a, b) => b.spendings - a.spendings);
+
+        categories.forEach((category, index) => {
+            if (index < 5) {
+                data.push({
+                    title: category.name,
+                    value: category.spendings,
+                    color: ''
+                });
+            }
+            else {
+                other.value += category.spendings;
+            }
+        });
+
+        data.push(other);
+
+        // Assign color for 5 categories
+        data[0].color = "#50964a";
+        data[1].color = "#d6493a";
+        data[2].color = "#3ad6bc";
+        data[3].color = "#2732d6";
+        data[4].color = "#6A2135";
+
+        return data;
+    };
 
     return (
         <>
@@ -94,39 +128,72 @@ const Categories = () => {
             <button className="button is-fullwidth mb-5 is-primary" onClick={() => setActiveModal(true)}>
                 Create Category
             </button>
-            <ErrorMessage message={errorMessage} />
-            <SuccessMessage message={successMessage} />
+                {errorMessage || successMessage ? (
+                    <div className="box is-fullwidth">
+                    <ErrorMessage errorMessage={errorMessage} />
+                    <SuccessMessage successMessage={successMessage} />
+                    </div>
+                ) : null}
             {loaded && categories ? (
-                <table className="table is-fullwidth is-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Spendings</th>
-                            <th>Budget</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {categories.map((category) => (
-                            <tr key={category.id}>
-                                <td>{category.name}</td>
-                                {/* TODO: Improve backend endpoint to return spendings and budget */}
-                                <td>{category.spendings / 100 + " PLN"}</td>
-                                <td>{category.budget / 100 + " PLN"}</td>
-                                <td>
-                                    <button className="button mr-2 is-info is-light" onClick={() => handleUpdate(category.id)}>
-                                        Update
-                                    </button>
-                                    <button className="button mr-2 is-danger is-light" onClick={() => handleDelete(category.id)}>
-                                        Delete
-                                    </button>
-                                </td>
+                <>
+                    <div className="box is-fullwidth">
+                        <PieChart
+                            data={processData()}
+                            label={({ dataEntry }) => dataEntry.title}
+                            labelStyle={{
+                                fontSize: "5px",
+                                fontFamily: "sans-serif"
+                            }}
+                            labelPosition={108}
+                            radius={50}
+                            lineWidth={20}
+                            animate
+                            animationEasing="ease-out"
+                            viewBoxSize={[115, 115]}
+                            // adjust svg size
+                            style={{ height: "400px" }}
+                            center={[50, 55]}
+
+                        />
+                    </div>
+                    <table className="table is-fullwidth is-striped">
+                        <thead>
+                            <tr>
+                                <th className="has-text-centered">Name</th>
+                                <th className="has-text-centered">Spendings</th>
+                                <th className="has-text-centered">Budget</th>
+                                <th className="has-text-centered">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {categories.map((category) => (
+                                <tr key={category.id}>
+                                    <td className="has-text-centered">{category.name}</td>
+                                    <td className="has-text-centered">{(category.spendings / 100).toFixed(2) + " PLN"}</td>
+                                    <td className="has-text-centered">{category.budget === 0 ? (
+                                        // Display "-" if budget is 0 and redirect to budgets page
+                                        <a href="/budgets">
+                                            <span className="has-text-danger">No budget</span>
+                                        </a>
+                                    ) : (
+                                        (category.budget / 100).toFixed(2) + " PLN"
+                                        )}
+                                    </td>
+                                    <td className="has-text-centered">
+                                        <button className="button mr-2 is-info is-light" onClick={() => handleUpdate(category.id)}>
+                                            Update
+                                        </button>
+                                        <button className="button mr-2 is-danger is-light" onClick={() => handleDelete(category.id)}>
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </>
             ) : (
-                <p>Loading</p>
+                <p>Please login first to access this section.</p>
             )}
         </>
     );

@@ -2,18 +2,21 @@ import React, { useState, useEffect } from "react";
 import ErrorMessage from "../components/Messages/ErrorMessage";
 import SuccessMessage from "../components/Messages/SuccessMessage";
 
-const CategoriesModal = ({
+const BudgetsModal = ({
     active,
     handleModal,
     token,
     id,
+    category_id,
+    spendings,
     setErrorMessage,
     setSuccessMessage
 }) => {
-    const [name, setName] = useState("");
+    const [budget, setBudget] = useState("");
+    const [temporaryBudget, setTemporaryBudget] = useState("");
 
     useEffect(() => {
-        const getCategories = async () => {
+        const getBudgets = async () => {
             const requestOptions = {
                 method: "GET",
                 headers: {
@@ -21,28 +24,27 @@ const CategoriesModal = ({
                     "Authorization": "Bearer " + token
                 },
             };
-
-            const response = await fetch(`/api/categories/${id}`, requestOptions);
+            const response = await fetch(`/api/budget/${id}`, requestOptions);
 
             if (!response.ok) {
                 setErrorMessage("Somthing went wrong");
             }
             else {
                 const data = await response.json();
-                setName(data.name);
+                setTemporaryBudget((data.value / 100).toFixed(2));
             }
         };
         if (id) {
-            getCategories();
+            getBudgets();
         }
-        }, [id, token]);
+    }, [id, token]);
 
 
     const cleanForm = () => {
-        setName("");
+        setBudget("");
     };
 
-    const handleCreateCategory = async (e) => {
+    const handleCreateBudget = async (e) => {
         e.preventDefault();
 
         const requestOptions = {
@@ -52,11 +54,13 @@ const CategoriesModal = ({
                 "Authorization": "Bearer " + token
             },
             body: JSON.stringify({
-                name: name
+                value: budget * 100,
+                category_id: category_id,
+                id: id
             })
         };
 
-        const response = await fetch("/api/categories", requestOptions);
+        const response = await fetch("/api/budget", requestOptions);
         const data = await response.json();
 
         if (!response.ok) {
@@ -66,11 +70,12 @@ const CategoriesModal = ({
             setSuccessMessage(data.detail);
             handleModal();
             cleanForm();
+            window.location.reload();
         }
 
     };
 
-    const handleUpdateCategory = async (e) => {
+    const handleUpdateBudget = async (e) => {
         e.preventDefault();
 
         const requestOptions = {
@@ -80,11 +85,13 @@ const CategoriesModal = ({
                 "Authorization": "Bearer " + token
             },
             body: JSON.stringify({
-                name: name
+                value: budget * 100,
+                category_id: category_id,
+                id: id
             })
         };
 
-        const response = await fetch(`/api/categories/${id}`, requestOptions);
+        const response = await fetch(`/api/budget/${id}`, requestOptions);
         const data = await response.json();
 
         if (!response.ok) {
@@ -94,6 +101,7 @@ const CategoriesModal = ({
             setSuccessMessage(data.detail);
             handleModal();
             cleanForm();
+            window.location.reload();
         }
 
     };
@@ -105,34 +113,44 @@ const CategoriesModal = ({
                 <div className="modal-card" onClick={(e) => { e.stopPropagation(); }}>
                     <header className="modal-card-head has-background-primary-light">
                         <h1 className="modal-card-title">
-                            { id ? "Edit Category" : "Add Category" }
+                            {id ? "Change Budget" : "Set Budget"}
                         </h1>
                     </header>
                     <section className="modal-card-body">
                         <form>
                             <div className="field">
-                                <label className="label">Name</label>
+                                <label className="label">Budget value</label>
                                 <div className="control">
                                     <input
-                                        type="text"
-                                        placeholder="Category Name"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
+                                        type="number"
+                                        placeholder="100.00"
+                                        value={budget}
+                                        onChange={(e) => setBudget(e.target.value)}
                                         className="input"
                                         required
+                                        min={0}
+                                        step={0.01}
                                     />
                                 </div>
                             </div>
+                            {id ? (
+                                <div className="field">
+                                    <label className="label">Current spend in category</label>
+                                    <div className="control">
+                                        { (spendings / 100) + " PLN" }
+                                    </div>
+                                </div>
+                            ) : null}
                         </form>
                     </section>
                     <footer className="modal-card-foot has-background-primary-light">
                         {id ? (
-                            <button className="button is-info" onClick={handleUpdateCategory}>
+                            <button className="button is-info" onClick={handleUpdateBudget}>
                                 Update
                             </button>
                         ) : (
-                            <button className="button is-primary" onClick={handleCreateCategory}>
-                                Create
+                            <button className="button is-primary" onClick={handleCreateBudget}>
+                                &nbsp;Set&nbsp;
                             </button>
                         )}
                         <button className="button" onClick={handleModal}>
@@ -143,6 +161,6 @@ const CategoriesModal = ({
             </div>
         </div>
     )
- };
+};
 
-export default CategoriesModal;
+export default BudgetsModal;

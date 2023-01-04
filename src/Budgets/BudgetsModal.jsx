@@ -34,6 +34,7 @@ const BudgetsModal = ({
                 setTemporaryBudget((data.value / 100).toFixed(2));
             }
         };
+        // console.log(id);
         if (id) {
             getBudgets();
         }

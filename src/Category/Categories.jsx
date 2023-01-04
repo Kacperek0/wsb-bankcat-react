@@ -7,6 +7,7 @@ import SuccessMessage from "../components/Messages/SuccessMessage";
 import { UserContext } from "../context/UserContext";
 
 import CategoriesModal from "./CategoriesModal";
+import InsightsModal from "../Insights/InsightsModal";
 
 const Categories = () => {
     const [token] = useContext(UserContext);
@@ -18,6 +19,9 @@ const Categories = () => {
     const [id, setId] = useState("");
     const [skip, setSkip] = useState(0);
     const [limit, setLimit] = useState(100);
+    const [activeInsightsModal, setActiveInsightsModal] = useState(false);
+    const [insightsCategoryId, setInsightsCategoryId] = useState("");
+    const [spendings, setSpendings] = useState(0);
 
     const getCategories = async () => {
         const requestOptions = {
@@ -78,7 +82,18 @@ const Categories = () => {
         setActiveModal(true);
     };
 
-    // Process data for pie chart, returns array of objects for top 5 categories with biggest spendings and one object for all other categories
+    const handleInsightsModal = () => {
+        setActiveInsightsModal(!activeInsightsModal);
+        setInsightsCategoryId(null);
+        setSpendings(0);
+    }
+
+    const handleInsights = (insightsCategoryId, spendings) => {
+        setInsightsCategoryId(insightsCategoryId);
+        setSpendings(spendings);
+        setActiveInsightsModal(true);
+    };
+
     const processData = () => {
         const data = [];
         const other = {
@@ -125,6 +140,15 @@ const Categories = () => {
                 setErrorMessage={setErrorMessage}
                 setSuccessMessage={setSuccessMessage}
             />
+            <InsightsModal
+                active={activeInsightsModal}
+                handleModal={handleInsightsModal}
+                token={token}
+                insightsCategoryId={insightsCategoryId}
+                spendings={spendings}
+                setErrorMessage={setErrorMessage}
+                setSuccessMessage={setSuccessMessage}
+            />
             <button className="button is-fullwidth mb-5 is-primary" onClick={() => setActiveModal(true)}>
                 Create Category
             </button>
@@ -146,7 +170,7 @@ const Categories = () => {
                             }}
                             labelPosition={108}
                             radius={50}
-                            lineWidth={20}
+                            lineWidth={50}
                             animate
                             animationEasing="ease-out"
                             viewBoxSize={[115, 115]}
@@ -168,10 +192,13 @@ const Categories = () => {
                         <tbody>
                             {categories.map((category) => (
                                 <tr key={category.id}>
-                                    <td className="has-text-centered">{category.name}</td>
+                                    <td className="has-text-centered">
+                                        <a onClick={() => handleInsights(category.id, category.spendings)}>
+                                            {category.name}
+                                        </a>
+                                    </td>
                                     <td className="has-text-centered">{(category.spendings / 100).toFixed(2) + " PLN"}</td>
                                     <td className="has-text-centered">{category.budget === 0 ? (
-                                        // Display "-" if budget is 0 and redirect to budgets page
                                         <a href="/budgets">
                                             <span className="has-text-danger">No budget</span>
                                         </a>

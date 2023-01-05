@@ -234,7 +234,6 @@ const Budgets = () => {
                                 animate
                                 animationEasing="ease-out"
                                 viewBoxSize={[115, 115]}
-                                // adjust svg size
                                 style={{ height: "400px" }}
                                 center={[60, 55]}
                             />

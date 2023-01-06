@@ -5,9 +5,13 @@ import SuccessMessage from "../components/Messages/SuccessMessage";
 
 import { UserContext } from "../context/UserContext";
 
+import SpendingsModal from "./SpendingsModal";
+import AssignmentModal from "./AssignmentModal";
+
 const Spendings = () => {
     const [token] = useContext(UserContext);
     const [spendings, setSpendings] = useState(null);
+    const [categories, setCategories] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [loaded, setLoaded] = useState(false);
@@ -15,6 +19,8 @@ const Spendings = () => {
     const [limit, setLimit] = useState(20);
     const [query, setQuery] = useState("");
     const [selectedRecords, setSelectedRecords] = useState([]);
+    const [activeModal, setActiveModal] = useState(false);
+    const [activeAssignModal, setActiveAssignModal] = useState(false);
 
     const getSpendings = async (skip, limit, query) => {
         const requestOptions = {
@@ -46,8 +52,32 @@ const Spendings = () => {
         }
     };
 
+    const getCategories = async () => {
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        };
+
+        const response = await fetch(`/api/categories-dashboard?skip=0&limit=200`, requestOptions);
+        const data = await response.json();
+
+        if (!response.ok) {
+            setErrorMessage(data.detail);
+        }
+        else {
+            setCategories(data.categories);
+            setLoaded(true);
+        }
+    };
+
     useEffect(() => {
-        getSpendings(skip, limit, query);
+        getCategories();
+        setTimeout(() => {
+            getSpendings(skip, limit, query);
+        }, 500);
     }, []);
 
     const handleNext = () => {
@@ -108,6 +138,26 @@ const Spendings = () => {
             }
         }
     };
+
+    const getCategoryName = (categoryId) => {
+        for (let i = 0; i < categories.length; i++) {
+            if (categories[i].id === categoryId) {
+                return categories[i].name;
+            }
+        }
+        return "";
+    }
+
+    const handleModal = () => {
+        setActiveModal(!activeModal);
+        getSpendings(skip, limit, query);
+    };
+
+    const handleAssignModal = () => {
+        setActiveAssignModal(!activeAssignModal);
+        getSpendings(skip, limit, query);
+    };
+
     // const handleUpdate = (id) => {
     //     setId(id);
     //     setActiveModal(true);
@@ -122,6 +172,21 @@ const Spendings = () => {
                 </div>
             ) : null}
             <br />
+            <SpendingsModal
+                active={activeModal}
+                handleModal={handleModal}
+                token={token}
+                setErrorMessage={setErrorMessage}
+                setSuccessMessage={setSuccessMessage}
+            />
+            <AssignmentModal
+                active={activeAssignModal}
+                handleModal={handleAssignModal}
+                token={token}
+                selectedRecords={selectedRecords}
+                setErrorMessage={setErrorMessage}
+                setSuccessMessage={setSuccessMessage}
+            />
             {loaded && spendings ? (
                 <>
                     <div className="columns">
@@ -156,10 +221,13 @@ const Spendings = () => {
                                 <div className="control">
                                     <button
                                         className="button is-primary is-light"
+                                        onClick={() => handleAssignModal()}
                                     >
                                         Assign Category
                                     </button>
-                                    <button className="button is-primary"
+                                    <button
+                                        className="button is-primary"
+                                        onClick={() => handleModal()}
                                     >
                                         Add Cash Spending
                                     </button>
@@ -196,7 +264,7 @@ const Spendings = () => {
                                     </td>
                                     <td className="has-text-centered">{spending.date}</td>
                                     <td className="has-text-centered">{spending.description}</td>
-                                    <td className="has-text-centered">{spending.category_id}</td>
+                                    <td className="has-text-centered">{getCategoryName(spending.category_id)}</td>
                                     <td className="has-text-centered">{(spending.amount / 100).toFixed(2) + " PLN"}</td>
                                     <td className="has-text-centered">
                                         <button className="button mr-2 is-danger is-light" onClick={() => handleDelete(spending.id)}>
